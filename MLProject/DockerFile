@@ -1,13 +1,12 @@
-FROM continuumio/miniconda3:latest
+FROM python:3.9-slim
 
 WORKDIR /app
 
-COPY conda.yaml .
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
 COPY MLproject .
 COPY modelling.py .
 COPY processed_shopping_trends.csv . 
-
-RUN conda env create -f conda.yaml && \
-    conda clean -afy
-
-ENV PATH /opt/conda/envs/mlflow_ci_classification_env/bin:$PATH

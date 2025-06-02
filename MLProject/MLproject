@@ -1,19 +1,13 @@
-name: ShoppingTrendsCI_Classification
+name: ShoppingTrendsCI_Classification_Pip
 
-# Menentukan file lingkungan Conda yang akan digunakan
-conda_env: conda.yaml
-
-# Mendefinisikan titik masuk (entry points) untuk proyek
 entry_points:
   main:
-    # Mendefinisikan parameter yang bisa diterima oleh entry point 'main'
-    # Setiap parameter memiliki tipe data dan nilai default
     parameters:
       data_file:
         {
           type: str,
           default: "processed_shopping_trends.csv",
-          description: "Path to the preprocessed data file.",
+          description: "Path to the preprocessed data file, relative to MLProject directory.",
         }
       tracking_mode:
         {
@@ -32,7 +26,7 @@ entry_points:
       experiment_name:
         {
           type: str,
-          default: "Shopping_Trends_CI_Retraining",
+          default: "Shopping_Trends_CI_Pip",
           description: "MLflow experiment name.",
         }
       local_mlflow_server_uri:
@@ -41,7 +35,7 @@ entry_points:
           default: "http://127.0.0.1:5000",
           description: "URI for local MLflow server.",
         }
-
+      
       # Hyperparameters untuk RandomForestClassifier
       n_estimators:
         {
@@ -52,7 +46,7 @@ entry_points:
       max_depth:
         {
           type: str,
-          default: "None",
+          default: "None", 
           description: "Maximum depth of the tree. Use 'None' for unlimited.",
         }
       min_samples_split:
@@ -76,12 +70,10 @@ entry_points:
       run_name:
         {
           type: str,
-          default: "RF_CI_Classifier_Run",
+          default: "RF_CI_Classifier_Run_Pip",
           description: "Name for the MLflow run.",
         }
 
-    # Perintah yang akan dijalankan ketika entry point 'main' dipanggil
-    # Menggunakan placeholder {parameter_name} untuk meneruskan nilai parameter ke script
     command: >-
       python modelling.py 
       --data_path {data_file}
