@@ -1,0 +1,15 @@
+artifact_uri: file:///Volumes/Dataku/03.%20Learning/Membangun%20Sisten%20ML%20-%20Dicoding/Workflow-CI-SMSML_Ardena/MLProject/mlruns/0/c757a4a98e23453ba7c6d2a7e2890d91/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: c757a4a98e23453ba7c6d2a7e2890d91
+run_name: indecisive-slug-180
+run_uuid: c757a4a98e23453ba7c6d2a7e2890d91
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1748880539762
+status: 1
+tags: []
+user_id: ardena

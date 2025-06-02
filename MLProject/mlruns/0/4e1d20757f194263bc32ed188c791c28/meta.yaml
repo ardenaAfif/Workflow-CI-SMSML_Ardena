@@ -1,0 +1,15 @@
+artifact_uri: file:///Volumes/Dataku/03.%20Learning/Membangun%20Sisten%20ML%20-%20Dicoding/Workflow-CI-SMSML_Ardena/MLProject/mlruns/0/4e1d20757f194263bc32ed188c791c28/artifacts
+end_time: 1748881432762
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 4e1d20757f194263bc32ed188c791c28
+run_name: bright-auk-129
+run_uuid: 4e1d20757f194263bc32ed188c791c28
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1748881027715
+status: 4
+tags: []
+user_id: ardena

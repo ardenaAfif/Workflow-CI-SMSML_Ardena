@@ -1,0 +1,15 @@
+artifact_uri: file:///Volumes/Dataku/03.%20Learning/Membangun%20Sisten%20ML%20-%20Dicoding/Workflow-CI-SMSML_Ardena/MLProject/mlruns/0/a75f83177004431cbcacfb8be2b46cb9/artifacts
+end_time: 1748882072868
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: a75f83177004431cbcacfb8be2b46cb9
+run_name: suave-jay-85
+run_uuid: a75f83177004431cbcacfb8be2b46cb9
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1748882069882
+status: 4
+tags: []
+user_id: ardena

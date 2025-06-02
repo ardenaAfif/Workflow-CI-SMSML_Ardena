@@ -1,0 +1,98 @@
+name: ShoppingTrendsCI_Classification
+
+# Menentukan file lingkungan Conda yang akan digunakan
+conda_env: conda.yaml
+
+# Mendefinisikan titik masuk (entry points) untuk proyek
+entry_points:
+  main:
+    # Mendefinisikan parameter yang bisa diterima oleh entry point 'main'
+    # Setiap parameter memiliki tipe data dan nilai default
+    parameters:
+      data_file:
+        {
+          type: str,
+          default: "processed_shopping_trends.csv",
+          description: "Path to the preprocessed data file.",
+        }
+      tracking_mode:
+        {
+          type: str,
+          default: "dagshub",
+          description: "MLflow tracking mode: dagshub, local_server, local_files.",
+        }
+      dagshub_user:
+        { type: str, default: "ardenaAfif", description: "DagsHub username." }
+      dagshub_repo:
+        {
+          type: str,
+          default: "SMSML_Ardena-Afif",
+          description: "DagsHub repository name.",
+        }
+      experiment_name:
+        {
+          type: str,
+          default: "Shopping_Trends_CI_Retraining",
+          description: "MLflow experiment name.",
+        }
+      local_mlflow_server_uri:
+        {
+          type: str,
+          default: "http://127.0.0.1:5000",
+          description: "URI for local MLflow server.",
+        }
+
+      # Hyperparameters untuk RandomForestClassifier
+      n_estimators:
+        {
+          type: int,
+          default: 100,
+          description: "Number of trees in the forest.",
+        }
+      max_depth:
+        {
+          type: str,
+          default: "None",
+          description: "Maximum depth of the tree. Use 'None' for unlimited.",
+        }
+      min_samples_split:
+        {
+          type: int,
+          default: 2,
+          description: "Minimum number of samples required to split an internal node.",
+        }
+      min_samples_leaf:
+        {
+          type: int,
+          default: 1,
+          description: "Minimum number of samples required to be at a leaf node.",
+        }
+      class_weight:
+        {
+          type: str,
+          default: "None",
+          description: "Weights for classes. Use 'None', 'balanced', or 'balanced_subsample'.",
+        }
+      run_name:
+        {
+          type: str,
+          default: "RF_CI_Classifier_Run",
+          description: "Name for the MLflow run.",
+        }
+
+    # Perintah yang akan dijalankan ketika entry point 'main' dipanggil
+    # Menggunakan placeholder {parameter_name} untuk meneruskan nilai parameter ke script
+    command: >-
+      python modelling.py 
+      --data_path {data_file}
+      --tracking_mode {tracking_mode}
+      --dagshub_user {dagshub_user}
+      --dagshub_repo {dagshub_repo}
+      --experiment_name {experiment_name}
+      --local_mlflow_server_uri {local_mlflow_server_uri}
+      --n_estimators {n_estimators}
+      --max_depth {max_depth}
+      --min_samples_split {min_samples_split}
+      --min_samples_leaf {min_samples_leaf}
+      --class_weight {class_weight}
+      --run_name {run_name}

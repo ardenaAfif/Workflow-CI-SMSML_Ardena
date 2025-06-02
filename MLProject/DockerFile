@@ -1,0 +1,11 @@
+FROM continuumio/miniconda3:latest
+
+WORKDIR /app
+
+COPY conda.yaml .
+COPY MLproject .
+COPY modelling.py .
+COPY processed_shopping_trends.csv . 
+
+RUN conda env create -f conda.yaml && \
+    conda clean -afy 

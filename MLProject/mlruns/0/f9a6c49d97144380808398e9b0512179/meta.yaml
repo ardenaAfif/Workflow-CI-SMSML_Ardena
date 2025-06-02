@@ -1,0 +1,15 @@
+artifact_uri: file:///Volumes/Dataku/03.%20Learning/Membangun%20Sisten%20ML%20-%20Dicoding/Workflow-CI-SMSML_Ardena/MLProject/mlruns/0/f9a6c49d97144380808398e9b0512179/artifacts
+end_time: 1748882159769
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: f9a6c49d97144380808398e9b0512179
+run_name: honorable-moose-681
+run_uuid: f9a6c49d97144380808398e9b0512179
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1748882156854
+status: 4
+tags: []
+user_id: ardena

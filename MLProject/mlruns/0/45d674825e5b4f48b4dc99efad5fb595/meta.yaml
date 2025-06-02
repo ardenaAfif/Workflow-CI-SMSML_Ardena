@@ -1,0 +1,15 @@
+artifact_uri: file:///Volumes/Dataku/03.%20Learning/Membangun%20Sisten%20ML%20-%20Dicoding/Workflow-CI-SMSML_Ardena/MLProject/mlruns/0/45d674825e5b4f48b4dc99efad5fb595/artifacts
+end_time: 1748881807978
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 45d674825e5b4f48b4dc99efad5fb595
+run_name: trusting-eel-260
+run_uuid: 45d674825e5b4f48b4dc99efad5fb595
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1748881553873
+status: 4
+tags: []
+user_id: ardena

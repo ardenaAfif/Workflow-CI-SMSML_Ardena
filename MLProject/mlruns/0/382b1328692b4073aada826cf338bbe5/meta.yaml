@@ -1,0 +1,15 @@
+artifact_uri: file:///Volumes/Dataku/03.%20Learning/Membangun%20Sisten%20ML%20-%20Dicoding/Workflow-CI-SMSML_Ardena/MLProject/mlruns/0/382b1328692b4073aada826cf338bbe5/artifacts
+end_time: 1748882020204
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 382b1328692b4073aada826cf338bbe5
+run_name: powerful-turtle-196
+run_uuid: 382b1328692b4073aada826cf338bbe5
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1748882016810
+status: 4
+tags: []
+user_id: ardena

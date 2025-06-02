@@ -1,0 +1,14 @@
+name: mlflow_ci_classification_env
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.9
+  - pip
+  - pip:
+    - pandas
+    - scikit-learn
+    - mlflow>=2.1
+    - dagshub
+    - matplotlib
+    - seaborn

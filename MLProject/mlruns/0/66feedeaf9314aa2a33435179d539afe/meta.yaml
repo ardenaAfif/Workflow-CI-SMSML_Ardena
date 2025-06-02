@@ -1,0 +1,15 @@
+artifact_uri: file:///Volumes/Dataku/03.%20Learning/Membangun%20Sisten%20ML%20-%20Dicoding/Workflow-CI-SMSML_Ardena/MLProject/mlruns/0/66feedeaf9314aa2a33435179d539afe/artifacts
+end_time: 1748882486827
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 66feedeaf9314aa2a33435179d539afe
+run_name: entertaining-fly-381
+run_uuid: 66feedeaf9314aa2a33435179d539afe
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1748882232941
+status: 4
+tags: []
+user_id: ardena
