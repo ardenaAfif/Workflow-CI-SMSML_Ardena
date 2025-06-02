@@ -33,6 +33,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install mlflow>=2.1 dagshub>=0.3 # Pastikan versi sesuai dengan kebutuhan Anda
 
+      - name: Set up Conda (Miniconda) # <--- LANGKAH INI PENTING
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-update-conda: true
+          python-version: 3.9
+          mamba-version: "*"
+          activate-environment: mlflow_ci_classification_env
+          environment-file: MLProject/conda.yaml
+          use-only-tar-bz2: true
+
       - name: Run MLflow Project
         env:
           DAGSHUB_USER_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
