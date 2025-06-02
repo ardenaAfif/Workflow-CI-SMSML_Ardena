@@ -8,4 +8,6 @@ COPY modelling.py .
 COPY processed_shopping_trends.csv . 
 
 RUN conda env create -f conda.yaml && \
-    conda clean -afy 
+    conda clean -afy
+
+ENV PATH /opt/conda/envs/mlflow_ci_classification_env/bin:$PATH
