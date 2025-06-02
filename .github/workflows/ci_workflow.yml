@@ -14,18 +14,16 @@ jobs:
   # Job pertama: Melatih ulang model menggunakan MLflow Project
   retrain_and_log_model:
     name: Retrain Model with MLflow Project
-    runs-on: ubuntu-latest # Menjalankan job pada runner Ubuntu terbaru
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./MLProject 
 
     steps:
       - name: Checkout Repository
-        # Mengunduh kode dari repository Anda ke runner
         uses: actions/checkout@v4
 
       - name: Set up Python (untuk MLflow CLI dan DagsHub client)
-        # Versi Python ini sebaiknya konsisten dengan yang Anda gunakan untuk pengembangan
         uses: actions/setup-python@v5
         with:
           python-version: '3.9' # Sesuaikan dengan versi di conda.yaml Anda
@@ -37,20 +35,22 @@ jobs:
 
       - name: Run MLflow Project
         env:
-          DAGSHUB_USER_TOKEN: ${{ secrets.DAGSHUB_TOKEN }} # Rekomendasi DagsHub
+          DAGSHUB_USER_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+        # Menggunakan bash dan memastikan inisialisasi conda
+        shell: bash -l {0} # Tambahkan -l untuk login shell, yang sering menginisialisasi conda
         run: |
           echo "Current directory before mlflow run: $(pwd)"
           echo "Listing files in current directory: $(ls -la)"
+          
+          # Coba cek apakah conda ada di PATH dan inisialisasi shell jika perlu
+          conda info --envs # Perintah ini juga bisa membantu menginisialisasi shell untuk conda
+          # Atau, jika setup-miniconda tidak secara otomatis menginisialisasi untuk sub-shell mlflow:
+          # eval "$(conda shell.bash hook)" # Inisialisasi shell bash untuk conda
+          # conda activate mlflow_ci_classification_env # Coba aktifkan environment secara manual SEBELUM mlflow run
+                                                      # Nama env ini harus sesuai dengan 'name' di conda.yaml
+
           echo "Running MLflow Project..."
-          # Menjalankan MLflow Project. MLflow akan membaca MLproject dan conda.yaml.
-          # Parameter bisa di-override di sini jika perlu, atau biarkan default dari MLproject.
-          # Pastikan parameter --dagshub_user dan --dagshub_repo sesuai.
-          # Jika Anda menggunakan GitHub Variables untuk ini (non-sensitif):
-          # mlflow run . -P tracking_mode="dagshub" \
-          #              -P dagshub_user="${{ vars.DAGSHUB_USERNAME_VAR || 'ardenaAfif' }}" \
-          #              -P dagshub_repo="${{ vars.DAGSHUB_REPO_NAME_VAR || 'SMSML_Ardena-Afif' }}" \
-          #              -P experiment_name="Shopping_Trends_CI_Retraining_GitHubActions"
-          # Jika username/repo sudah benar di MLproject, Anda bisa menyederhanakannya:
+          # MLflow akan mencoba membuat/mengaktifkan environment berdasarkan conda.yaml di MLproject
           mlflow run . -P tracking_mode="dagshub" -P experiment_name="Shopping_Trends_CI_GitHubActions"
 
   # Job kedua: Membangun dan mendorong image Docker
