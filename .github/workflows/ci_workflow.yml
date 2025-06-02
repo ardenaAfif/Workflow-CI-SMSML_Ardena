@@ -46,7 +46,7 @@ jobs:
           echo "Listing files in current directory (MLProject/): $(ls -la)"
           echo "Running MLflow Project..."
 
-        mlflow run . \
+          mlflow run . \
             -P tracking_mode="dagshub" \
             -P experiment_name="Shopping_Trends_CI_Pip_Actions" \
             -P dagshub_user="${{ secrets.DAGSHUB_USERNAME_OVERRIDE || 'ardenaAfif' }}" \
