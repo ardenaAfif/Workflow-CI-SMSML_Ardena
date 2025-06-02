@@ -26,21 +26,20 @@ jobs:
       - name: Set up Python (untuk MLflow CLI dan DagsHub client)
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9' # Sesuaikan dengan versi di conda.yaml Anda
+          python-version: '3.9'
 
       - name: Install MLflow and DagsHub Client
         run: |
           python -m pip install --upgrade pip
-          pip install mlflow>=2.1 dagshub>=0.3 # Pastikan versi sesuai dengan kebutuhan Anda
+          pip install mlflow>=2.1 dagshub>=0.3
 
-      - name: Set up Conda (Miniconda) # <--- LANGKAH INI PENTING
+      - name: Set up Conda (Miniconda)
         uses: conda-incubator/setup-miniconda@v3
         with:
-          auto-update-conda: true
-          python-version: 3.9
-          mamba-version: "*"
-          activate-environment: mlflow_ci_classification_env
           environment-file: MLProject/conda.yaml
+          python-version: 3.9
+          auto-activate-base: false
+          activate-environment: ''
           use-only-tar-bz2: true
 
       - name: Run MLflow Project
