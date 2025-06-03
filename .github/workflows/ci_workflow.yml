@@ -32,7 +32,7 @@ jobs:
 
     - name: 📦 Install Dependencies
       run: |
-        pip install -r requirements.txt
+        pip install -r ./MLProject/requirements.txt
         pip install mlflow dagshub scikit-learn pandas matplotlib seaborn
 
     - name: 🚀 Run MLflow Project
