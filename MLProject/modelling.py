@@ -18,7 +18,6 @@ DEFAULT_PROCESSED_DATA_PATH = "processed_shopping_trends.csv"
 
 # Folder untuk menyimpan plot/JSON sementara sebelum di-log sebagai artifact
 ARTIFACTS_TEMP_DIR = "artifacts_temp"
-os.makedirs(ARTIFACTS_TEMP_DIR, exist_ok=True)
 
 
 def load_and_split_data(data_path: str):
@@ -94,8 +93,17 @@ def train_model(
 
     class_labels_str = [str(label) for label in class_labels_int]
     
+    print("--- [DEBUG] Memasuki train_model ---")
+    class_labels_str = [str(label) for label in class_labels_int]
+    
     active_run = mlflow.active_run()
-    if active_run is None:
+    if active_run:
+        print(f"ℹ️ [DEBUG] Run aktif ditemukan di train_model: ID {active_run.info.run_id}, Experiment ID {active_run.info.experiment_id}")
+    else:
+        print("🔥 [DEBUG] TIDAK ADA RUN AKTIF ditemukan oleh mlflow.active_run() di train_model.")
+        # Cetak lagi env vars di sini untuk konteks error
+        print(f"🔥 [DEBUG] train_model MLFLOW_TRACKING_URI: {os.environ.get('MLFLOW_TRACKING_URI')}")
+        print(f"🔥 [DEBUG] train_model MLFLOW_RUN_ID: {os.environ.get('MLFLOW_RUN_ID')}")
         raise RuntimeError("Script ini harus dijalankan lewat MLflow Project/`mlflow run`, **bukan manual python**!")
 
     run_id = active_run.info.run_id
@@ -191,6 +199,27 @@ def train_model(
     print(f"\n✔ Eksperimen selesai. Run ID: {run_id}")
 
 if __name__ == "__main__":
+
+    os.makedirs(ARTIFACTS_TEMP_DIR, exist_ok=True)
+    print(f"Direktori artefak temporer '{ARTIFACTS_TEMP_DIR}' telah dipastikan ada.")
+
+    print("--- [DEBUG] Lingkungan MLflow di awal __main__ ---")
+    print(f"[DEBUG] MAIN MLFLOW_TRACKING_URI: {os.environ.get('MLFLOW_TRACKING_URI')}")
+    print(f"[DEBUG] MAIN MLFLOW_RUN_ID: {os.environ.get('MLFLOW_RUN_ID')}")
+    print(f"[DEBUG] MAIN MLFLOW_EXPERIMENT_ID: {os.environ.get('MLFLOW_EXPERIMENT_ID')}")
+    print(f"[DEBUG] MAIN MLFLOW_EXPERIMENT_NAME: {os.environ.get('MLFLOW_EXPERIMENT_NAME')}")
+    print("--- [DEBUG] Akhir Lingkungan MLflow di awal __main__ ---")
+
+    try:
+        initial_active_run = mlflow.active_run()
+        if initial_active_run:
+            print(f"ℹ️ [DEBUG] Run aktif awal di __main__ (sebelum set_experiment): ID {initial_active_run.info.run_id}, Experiment ID {initial_active_run.info.experiment_id}")
+        else:
+            print("⚠️ [DEBUG] TIDAK ADA run aktif awal yang terdeteksi oleh mlflow.active_run() di __main__ (sebelum set_experiment).")
+    except Exception as e:
+        print(f"[WARNING] [DEBUG] Error saat memeriksa run aktif awal di __main__: {e}")
+
+
     parser = argparse.ArgumentParser(
         description="Script MLflow Project untuk RandomForestClassifier (local_files)."
     )
@@ -249,7 +278,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"[WARNING] Tidak dapat mengambil detail eksperimen '{args.experiment_name}': {e}. Menggunakan nama yang diberikan.")
 
-    os.makedirs(ARTIFACTS_TEMP_DIR, exist_ok=True)
 
     try:
         X_train, X_test, y_train, y_test, feature_names, class_labels_int = load_and_split_data(args.data_path)
