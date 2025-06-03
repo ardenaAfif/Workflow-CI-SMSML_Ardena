@@ -35,10 +35,11 @@ jobs:
           pip install -r requirements.txt 
           echo "Dependensi berhasil diinstal dari requirements.txt"
 
-      - name: Run MLflow Project
+            - name: Run MLflow Project
         env:
           DAGSHUB_USER_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
-
+          DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME_OVERRIDE }}
+          DAGSHUB_REPO: ${{ secrets.DAGSHUB_REPO_OVERRIDE }}
         run: |
           echo "Current directory: $(pwd)"
           echo "Python version: $(python --version)"
@@ -46,11 +47,15 @@ jobs:
           echo "Listing files in current directory (MLProject/): $(ls -la)"
           echo "Running MLflow Project..."
 
+          dagshub_user=${DAGSHUB_USERNAME:-ardenaAfif}
+          dagshub_repo=${DAGSHUB_REPO:-SMSML_Ardena-Afif}
+
           mlflow run . \
             -P tracking_mode="dagshub" \
             -P experiment_name="Shopping_Trends_CI_Pip_Actions" \
-            -P dagshub_user="${{ secrets.DAGSHUB_USERNAME_OVERRIDE || 'ardenaAfif' }}" \
-            -P dagshub_repo="${{ secrets.DAGSHUB_REPO_OVERRIDE || 'SMSML_Ardena-Afif' }}"
+            -P dagshub_user="$dagshub_user" \
+            -P dagshub_repo="$dagshub_repo"
+
 
   # Job kedua: Membangun dan mendorong image Docker
   build_and_push_docker_image:
