@@ -30,11 +30,24 @@ jobs:
 
     - name: 📦 Install Dependencies
       run: |
-        pip install -r ./MLProject/requirements.txt
-        pip install --upgrade "mlflow==2.19.0" dagshub scikit-learn pandas matplotlib seaborn
+        if [ -f ./MLProject/requirements.txt ]; then
+          pip install -r ./MLProject/requirements.txt
+        else
+          echo "File MLProject/requirements.txt tidak ditemukan."
+        fi
+        
+        echo "Mencoba menghapus mlflow yang mungkin sudah terinstal..."
+        pip uninstall -y mlflow || echo "mlflow tidak terinstal sebelumnya atau gagal dihapus (tidak masalah)."
+        
+        echo "Menginstal mlflow==2.19.0 dan dependensi lain..."
+        pip install --no-cache-dir "mlflow==2.19.0" dagshub scikit-learn pandas matplotlib seaborn
+        
         echo "============================================"
-        echo "VERSI MLFLOW YANG TERINSTAL:"
+        echo "VERSI MLFLOW YANG TERINSTAL SETELAH INSTALASI EKSPLISIT:"
         pip show mlflow
+        mlflow --version # Cara lain untuk mengecek versi CLI
+        echo "LOKASI MLFLOW CLI:"
+        which mlflow
         echo "============================================"
 
     - name: 🚀 Run MLflow Project
