@@ -6,11 +6,8 @@ on:
   workflow_dispatch:
 
 env:
-  DAGSHUB_USER_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
   DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
   DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
-  MLFLOW_TRACKING_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
-  MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
 
 jobs:
   build-and-deploy:
@@ -38,13 +35,16 @@ jobs:
     - name: 🚀 Run MLflow Project
       run: |
         mlflow run ./MLProject \
-          --env-manager=local
+          --env-manager=local \
           -P data_file=processed_shopping_trends.csv \
-          -P tracking_mode=dagshub \
-          -P dagshub_user=ardenaAfif \
-          -P dagshub_repo=SMSML_Ardena-Afif \
+          -P tracking_mode=local_files \
           -P experiment_name=Shopping_Trends_CI_Pip \
-          -P local_mlflow_server_uri=http://127.0.0.1:5000
+          -P n_estimators=100 \
+          -P max_depth=None \
+          -P min_samples_split=2 \
+          -P min_samples_leaf=1 \
+          -P class_weight=None \
+          -P run_name=RF_CI_Classifier_Run
 
     - name: 🆔 Get Latest MLflow run_id
       id: get_run_id
@@ -58,7 +58,9 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: mlflow-artifacts
-        path: ./artifacts_temp/
+        path: |
+          ./MLProject/mlruns/${{ env.RUN_ID}}
+          artifacts_temp/
 
     - name: 🛠️ Build Docker Image using MLflow
       run: |
