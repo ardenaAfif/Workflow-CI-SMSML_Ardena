@@ -31,11 +31,10 @@ jobs:
       - name: Install Dependencies (pip)
         run: |
           python -m pip install --upgrade pip
-          # Instal dari requirements.txt yang ada di dalam working-directory (MLProject/)
           pip install -r requirements.txt 
           echo "Dependensi berhasil diinstal dari requirements.txt"
 
-            - name: Run MLflow Project
+      - name: Run MLflow Project
         env:
           DAGSHUB_USER_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
           DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME_OVERRIDE }}
@@ -55,7 +54,6 @@ jobs:
             -P experiment_name="Shopping_Trends_CI_Pip_Actions" \
             -P dagshub_user="$dagshub_user" \
             -P dagshub_repo="$dagshub_repo"
-
 
   # Job kedua: Membangun dan mendorong image Docker
   build_and_push_docker_image:
@@ -86,6 +84,6 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/shopping-trends-model-pip:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/shopping-trends-model-pip:${{ github.sha }}
-      
+
       - name: Print image digest
         run: echo "Image digest: ${{ steps.docker_build.outputs.digest }}"
