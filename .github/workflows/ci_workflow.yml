@@ -37,7 +37,7 @@ jobs:
 
     - name: 🚀 Run MLflow Project
       run: |
-        mlflow run . \
+        mlflow run ./MLProject \
           -P data_file=processed_shopping_trends.csv \
           -P tracking_mode=dagshub \
           -P dagshub_user=ardenaAfif \
