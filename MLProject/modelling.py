@@ -120,19 +120,7 @@ def train_model(
     """
     class_labels_str = [str(label) for label in class_labels_int]
 
-    if mlflow.active_run() is None:
-        run = mlflow.start_run(run_name=params.get("run_name", "RF_CI_Retraining_Run"))
-        is_nested = False
-    else:
-        run = mlflow.start_run(run_name=params.get("run_name", "RF_CI_Retraining_Run"), nested=True)
-        is_nested = True
-
-    run_id = run.info.run_id
-    experiment_id = run.info.experiment_id
-
-    print(f"MLflow Run ID: {run_id}, Experiment ID: {experiment_id}, (Eksperimen: {current_experiment_name})")
-    active_uri = mlflow.get_tracking_uri()
-    print(f"Logging ke MLflow URI: {active_uri}")
+    print(f"Logging ke MLflow URI: {mlflow.get_tracking_uri()}")
 
     # Log parameter yang dipakai untuk training
     mlflow.log_params(params)
