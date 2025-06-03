@@ -86,4 +86,5 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/shopping-trends-model-pip:${{ github.sha }}
 
       - name: Print image digest
+        if: steps.docker_build.outputs.digest != ''
         run: echo "Image digest: ${{ steps.docker_build.outputs.digest }}"
