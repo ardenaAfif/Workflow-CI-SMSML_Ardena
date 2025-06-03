@@ -37,8 +37,7 @@ jobs:
         mlflow run ./MLProject \
           --env-manager=local \
           -P data_file=processed_shopping_trends.csv \
-          -P tracking_mode=local_files \
-          -P experiment_name=Shopping_Trends_CI_Pip \
+          -P experiment_name=Shopping_Trends_CI \
           -P n_estimators=100 \
           -P max_depth=None \
           -P min_samples_split=2 \
