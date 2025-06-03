@@ -119,10 +119,9 @@ def train_model(
 
     class_labels_str = [str(label) for label in class_labels_int]
     
-    active_run = mlflow.active_run()
-    if active_run is None:
-        raise RuntimeError("Tidak ada MLflow active run! Script harus dijalankan lewat MLflow Project/MLflow run.")
-    run_id = active_run.info.run_id
+    if mlflow.active_run() is None:
+        mlflow.start_run()
+    run_id = mlflow.active_run().info.run_id
 
     print(f"Logging ke MLflow URI: {mlflow.get_tracking_uri()}")
 
