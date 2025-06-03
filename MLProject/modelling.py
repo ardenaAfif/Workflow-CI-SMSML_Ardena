@@ -116,9 +116,16 @@ def train_model(
 ):
     """
     Melatih RandomForestClassifier dan mencatat ke MLflow.
-    - Menggunakan nested run jika sudah ada active run (karena 'mlflow run' sudah start run).
     """
+
     class_labels_str = [str(label) for label in class_labels_int]
+    
+    if mlflow.active_run() is None:
+        run_id = os.environ.get("MLFLOW_RUN_ID")
+        if run_id:
+            mlflow.start_run(run_id=run_id)
+        else:
+            mlflow.start_run()
 
     print(f"Logging ke MLflow URI: {mlflow.get_tracking_uri()}")
 
