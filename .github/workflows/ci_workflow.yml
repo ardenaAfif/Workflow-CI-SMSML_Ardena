@@ -40,7 +40,7 @@ jobs:
         pip uninstall -y mlflow || echo "mlflow tidak terinstal sebelumnya atau gagal dihapus (tidak masalah)."
         
         echo "Menginstal mlflow==2.19.0 dan dependensi lain..."
-        pip install --no-cache-dir "mlflow==2.19.0" dagshub scikit-learn pandas matplotlib seaborn
+        pip install --no-cache-dir "mlflow==2.19.0" scikit-learn pandas matplotlib seaborn
         
         echo "============================================"
         echo "VERSI MLFLOW YANG TERINSTAL SETELAH INSTALASI EKSPLISIT:"
@@ -69,27 +69,23 @@ jobs:
       run: |
         echo "Target MLflow Experiment Name: ${{ env.MLFLOW_EXPERIMENT_NAME }}"
         
-        EXPERIMENT_JSON=$(mlflow experiments search --filter "name='${{ env.MLFLOW_EXPERIMENT_NAME }}'" --output-format json)
+        EXPERIMENT_JSON=$(mlflow experiments list --output-format json)
         echo "Experiment search result: ${EXPERIMENT_JSON}"
-        EXPERIMENT_ID=$(echo "${EXPERIMENT_JSON}" | jq -r '.[0].experiment_id') # .[0] karena search bisa mengembalikan array
+        EXPERIMENT_ID=$(echo "${EXPERIMENT_JSON}" | jq -r --arg name "${{ env.MLFLOW_EXPERIMENT_NAME }}" '.[] | select(.name == $name) | .experiment_id')
         
         if [[ -z "$EXPERIMENT_ID" || "$EXPERIMENT_ID" == "null" ]]; then
           echo "Error: Experiment '${{ env.MLFLOW_EXPERIMENT_NAME }}' not found or ID is null."
-          echo "Listing all experiments:"
-          mlflow experiments list --view ALL # Tambahkan --view ALL untuk melihat eksperimen yang mungkin terhapus
           exit 1
         fi
         echo "EXPERIMENT_ID=${EXPERIMENT_ID}" >> $GITHUB_ENV
         echo "Found Experiment ID: ${EXPERIMENT_ID}"
 
-        # Bagian untuk mendapatkan RUN_ID seharusnya sudah benar
         RUN_JSON=$(mlflow runs list --experiment-id "${EXPERIMENT_ID}" --order-by "attributes.start_time DESC" --output-format json)
         echo "Run list result for experiment ${EXPERIMENT_ID}: ${RUN_JSON}"
         RUN_ID=$(echo "${RUN_JSON}" | jq -r '.[0].info.run_id')
 
         if [[ -z "$RUN_ID" || "$RUN_ID" == "null" ]]; then
           echo "Error: No runs found for Experiment ID '${EXPERIMENT_ID}' or Run ID is null."
-          mlflow runs list --experiment-id "${EXPERIMENT_ID}" # Cetak list run untuk debug
           exit 1
         fi
         echo "RUN_ID=${RUN_ID}" >> $GITHUB_ENV
