@@ -21,31 +21,6 @@ ARTIFACTS_TEMP_DIR = "artifacts_temp"
 os.makedirs(ARTIFACTS_TEMP_DIR, exist_ok=True)
 
 
-def init_mlflow_local(experiment_name: str):
-    """
-    Inisialisasi MLflow hanya untuk local file-based tracking.
-    - Set tracking URI ke default (None) → folder './mlruns'
-    - Set atau buat experiment dengan nama 'experiment_name'
-    """
-    # 1) Pastikan MLflow menggunakan file-based tracking (./mlruns)
-    mlflow.set_tracking_uri(None)
-
-    # 2) Set experiment (jika tidak ada, MLflow otomatis buat)
-    mlflow.set_experiment(experiment_name)
-
-    try:
-        curr_exp = mlflow.get_experiment_by_name(experiment_name)
-        if curr_exp:
-            print(f"✔ Eksperimen MLflow diatur ke: {curr_exp.name} (ID: {curr_exp.experiment_id})")
-        else:
-            # Kalau belum ter-query, biasanya MLflow baru membuat saat set_experiment
-            print(f"ℹ Eksperimen seharusnya diatur ke: {experiment_name} (akan dibuat otomatis)")
-    except Exception as e:
-        print(f"[WARNING] Tidak dapat mengambil detail eksperimen '{experiment_name}': {e}")
-
-    return True, experiment_name
-
-
 def load_and_split_data(data_path: str):
     """
     Memuat data yang sudah diproses dan membaginya menjadi train/test.
@@ -261,21 +236,37 @@ if __name__ == "__main__":
     print(f"Parameter yang diterima:\n  data_path = '{args.data_path}'\n  experiment_name = '{args.experiment_name}'")
     print(f"Parameter model: {model_params}\n")
 
-    # Inisialisasi MLflow (local file-based)
-    mlflow_ok, actual_experiment_name = init_mlflow_local(args.experiment_name)
+    mlflow.set_experiment(args.experiment_name)
 
-    if mlflow_ok:
-        hasil = load_and_split_data(args.data_path)
-        if hasil and len(hasil) == 6 and hasil[0] is not None:
-            X_train, X_test, y_train, y_test, feature_names, class_labels_int = hasil
-            train_model(
-                X_train, y_train, X_test, y_test,
-                feature_names, class_labels_int,
-                model_params, args.data_path, actual_experiment_name
-            )
+    actual_experiment_name = args.experiment_name
+    try:
+        experiment = mlflow.get_experiment_by_name(args.experiment_name)
+        if experiment:
+            print(f"✔ Eksperimen MLflow diatur/dikonfirmasi: {experiment.name} (ID: {experiment.experiment_id})")
+            actual_experiment_name = experiment.name
         else:
-            print(f"[ERROR] Gagal memuat atau membagi data dari {args.data_path}. Pelatihan dibatalkan.")
-    else:
-        print("[ERROR] Inisialisasi MLflow gagal. Script tidak dapat melanjutkan.")
+            print(f"ℹ️ Eksperimen '{args.experiment_name}' telah di-set. Akan dibuat jika belum ada oleh MLflow.")
+    except Exception as e:
+        print(f"[WARNING] Tidak dapat mengambil detail eksperimen '{args.experiment_name}': {e}. Menggunakan nama yang diberikan.")
+
+    os.makedirs(ARTIFACTS_TEMP_DIR, exist_ok=True)
+
+    try:
+        X_train, X_test, y_train, y_test, feature_names, class_labels_int = load_and_split_data(args.data_path)
+        
+        train_model(
+            X_train, y_train, X_test, y_test,
+            feature_names, class_labels_int,
+            model_params, args.data_path, actual_experiment_name
+        )
+    except FileNotFoundError as e:
+        print(f"[ERROR] Gagal memuat data: {e}. Pelatihan dibatalkan.")
+        raise
+    except ValueError as e:
+        print(f"[ERROR] Kesalahan pada data: {e}. Pelatihan dibatalkan.")
+        raise
+    except Exception as e:
+        print(f"[ERROR] Terjadi kesalahan tak terduga selama proses training: {e}")
+        raise
 
     print("--- Script Pelatihan Model Selesai ---")

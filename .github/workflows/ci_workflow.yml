@@ -8,6 +8,7 @@ on:
 env:
   DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
   DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
+  MLFLOW_EXPERIMENT_NAME: "Shopping_Trends_CI"
 
 jobs:
   build-and-deploy:
@@ -37,7 +38,7 @@ jobs:
         mlflow run ./MLProject \
           --env-manager=local \
           -P data_file=processed_shopping_trends.csv \
-          -P experiment_name=Shopping_Trends_CI \
+          -P experiment_name=${{ env.MLFLOW_EXPERIMENT_NAME }} \
           -P n_estimators=100 \
           -P max_depth=None \
           -P min_samples_split=2 \
@@ -45,26 +46,48 @@ jobs:
           -P class_weight=None \
           -P run_name=RF_CI_Classifier_Run
 
-    - name: 🆔 Get Latest MLflow run_id
-      id: get_run_id
+    - name: 🆔 Get MLflow Experiment ID and Latest Run ID
+      id: get_ids
+      shell: bash
       run: |
-        echo "Getting latest run ID..."
-        RUN_ID=$(mlflow runs list --experiment-name Shopping_Trends_CI_Pip --order-by attributes.start_time desc | awk 'NR==2 {print $1}')
-        echo "Latest run ID is: $RUN_ID"
-        echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+        echo "Target MLflow Experiment Name: ${{ env.MLFLOW_EXPERIMENT_NAME }}"
+        
+        EXPERIMENT_JSON=$(mlflow experiments search --query "name='${{ env.MLFLOW_EXPERIMENT_NAME }}'" --output-format json)
+        echo "Experiment search result: ${EXPERIMENT_JSON}"
+        EXPERIMENT_ID=$(echo "${EXPERIMENT_JSON}" | jq -r '.[0].experiment_id')
+        
+        if [[ -z "$EXPERIMENT_ID" || "$EXPERIMENT_ID" == "null" ]]; then
+          echo "Error: Experiment '${{ env.MLFLOW_EXPERIMENT_NAME }}' not found or ID is null."
+          echo "Listing all experiments:"
+          mlflow experiments list
+          exit 1
+        fi
+        echo "EXPERIMENT_ID=${EXPERIMENT_ID}" >> $GITHUB_ENV
+        echo "Found Experiment ID: ${EXPERIMENT_ID}"
 
-    - name: 📤 Upload Artifacts to GitHub
+        RUN_JSON=$(mlflow runs list --experiment-id "${EXPERIMENT_ID}" --order-by "attributes.start_time DESC" --output-format json)
+        echo "Run list result for experiment ${EXPERIMENT_ID}: ${RUN_JSON}"
+        RUN_ID=$(echo "${RUN_JSON}" | jq -r '.[0].info.run_id')
+
+        if [[ -z "$RUN_ID" || "$RUN_ID" == "null" ]]; then
+          echo "Error: No runs found for Experiment ID '${EXPERIMENT_ID}' or Run ID is null."
+          exit 1
+        fi
+        echo "RUN_ID=${RUN_ID}" >> $GITHUB_ENV
+        echo "Found Run ID: ${RUN_ID}"
+
+    - name: 📤 Upload MLflow Run Directory to GitHub
       uses: actions/upload-artifact@v4
       with:
-        name: mlflow-artifacts
+        name: mlflow-run-data-${{ env.RUN_ID }}
         path: |
-          ./MLProject/mlruns/${{ env.RUN_ID}}
-          artifacts_temp/
+          ./mlruns/${{ env.EXPERIMENT_ID }}/${{ env.RUN_ID }}/
+          ./MLProject/artifacts_temp/ 
 
     - name: 🛠️ Build Docker Image using MLflow
       run: |
-        mlflow models build-docker -m "runs:/${{ env.RUN_ID }}/model" -n shopping-trends-ci:latest
-
+        mlflow models build-docker --model-uri "runs:/${{ env.RUN_ID }}/random-forest-model-ci" --name "shopping-trends-ci:latest" --enable-mlserver
+        
     - name: 🔐 Log in to Docker Hub
       run: echo "${{ env.DOCKER_PASSWORD }}" | docker login -u "${{ env.DOCKER_USERNAME }}" --password-stdin
 
