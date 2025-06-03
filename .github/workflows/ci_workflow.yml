@@ -72,13 +72,13 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push Docker image
-        id: docker_build
+        id: docker_build 
         uses: docker/build-push-action@v5
         with:
-          context: ./MLProject
-          file: ./MLProject/Dockerfile
+          context: ./MLProject 
+          file: ./MLProject/Dockerfile 
           push: true 
-          tags: | 
+          tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/shopping-trends-model-pip:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/shopping-trends-model-pip:${{ github.sha }}
       
