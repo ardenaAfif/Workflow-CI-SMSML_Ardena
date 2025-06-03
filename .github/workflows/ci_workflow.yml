@@ -31,7 +31,7 @@ jobs:
     - name: 📦 Install Dependencies
       run: |
         pip install -r ./MLProject/requirements.txt
-        pip install --upgrade "mlflow>=2.2.0" dagshub scikit-learn pandas matplotlib seaborn
+        pip install --upgrade "mlflow==2.19.0" dagshub scikit-learn pandas matplotlib seaborn
         echo "============================================"
         echo "VERSI MLFLOW YANG TERINSTAL:"
         pip show mlflow
