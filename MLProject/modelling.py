@@ -119,12 +119,10 @@ def train_model(
 
     class_labels_str = [str(label) for label in class_labels_int]
     
-    if mlflow.active_run() is None:
-        run_id = os.environ.get("MLFLOW_RUN_ID")
-        if run_id:
-            mlflow.start_run(run_id=run_id)
-        else:
-            mlflow.start_run()
+    active_run = mlflow.active_run()
+    if active_run is None:
+        raise RuntimeError("Tidak ada MLflow active run! Script harus dijalankan lewat MLflow Project/MLflow run.")
+    run_id = active_run.info.run_id
 
     print(f"Logging ke MLflow URI: {mlflow.get_tracking_uri()}")
 
@@ -215,10 +213,6 @@ def train_model(
         print(f"✔ Feature importances CSV disimpan: {fi_csv_path}")
 
     print(f"\n✔ Eksperimen selesai. Run ID: {run_id}")
-
-    if not is_nested:
-        mlflow.end_run()
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
