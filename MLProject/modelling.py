@@ -90,39 +90,59 @@ def train_model(
     """
     Melatih RandomForestClassifier dan mencatat ke MLflow.
     """
-
-    class_labels_str = [str(label) for label in class_labels_int]
-    
     print("--- [DEBUG] Memasuki train_model ---")
     class_labels_str = [str(label) for label in class_labels_int]
     
     active_run = mlflow.active_run()
+    run_id_from_env = os.environ.get('MLFLOW_RUN_ID')
+
     if active_run:
-        print(f"ℹ️ [DEBUG] Run aktif ditemukan di train_model: ID {active_run.info.run_id}, Experiment ID {active_run.info.experiment_id}")
+        print(f"ℹ️ [DEBUG] Run aktif ditemukan secara otomatis di train_model: ID {active_run.info.run_id}, Experiment ID {active_run.info.experiment_id}")
+        run_id = active_run.info.run_id
+    elif run_id_from_env:
+        print(f"⚠️ [DEBUG] TIDAK ADA run aktif otomatis, TETAPI MLFLOW_RUN_ID ({run_id_from_env}) ADA di env.")
+        print(f"⚠️ [DEBUG] Mencoba memulai/bergabung dengan run ID: {run_id_from_env}")
+        try:
+            # Ini akan mencoba melanjutkan run yang sudah ada ATAU memulai yang baru jika run_id belum ada di backend
+            # dan run tersebut tidak aktif dari perspektif proses ini.
+            # Penting: Pastikan experiment sudah di-set sebelumnya di __main__
+            # agar start_run ini terasosiasi dengan experiment yang benar.
+            # Jika mlflow.set_experiment() dipanggil di __main__, start_run() akan menghormatinya.
+            active_run = mlflow.start_run(run_id=run_id_from_env)
+            print(f"✅ [DEBUG] Berhasil memulai/bergabung dengan run: ID {active_run.info.run_id}, Experiment ID {active_run.info.experiment_id}")
+            run_id = active_run.info.run_id
+        except Exception as e:
+            print(f"🔥 [DEBUG] GAGAL memulai/bergabung dengan run ID {run_id_from_env} dari env: {e}")
+            print(f"🔥 [DEBUG] train_model MLFLOW_TRACKING_URI: {os.environ.get('MLFLOW_TRACKING_URI')}")
+            raise RuntimeError(f"Gagal mengaktifkan MLflow run meskipun MLFLOW_RUN_ID ada: {e}")
     else:
-        print("🔥 [DEBUG] TIDAK ADA RUN AKTIF ditemukan oleh mlflow.active_run() di train_model.")
-        # Cetak lagi env vars di sini untuk konteks error
-        print(f"🔥 [DEBUG] train_model MLFLOW_TRACKING_URI: {os.environ.get('MLFLOW_TRACKING_URI')}")
-        print(f"🔥 [DEBUG] train_model MLFLOW_RUN_ID: {os.environ.get('MLFLOW_RUN_ID')}")
-        raise RuntimeError("Script ini harus dijalankan lewat MLflow Project/`mlflow run`, **bukan manual python**!")
+        print("🔥 [DEBUG] TIDAK ADA RUN AKTIF dan TIDAK ADA MLFLOW_RUN_ID di env.")
+        raise RuntimeError("Script ini harus dijalankan lewat MLflow Project/`mlflow run` dan MLFLOW_RUN_ID harus ada.")
 
-    run_id = active_run.info.run_id
+    # Pastikan run_name dari parameter MLProject digunakan sebagai tag
+    # Jika run_name ada di params, gunakan itu. Jika tidak, fallback ke default.
+    current_run_name = params.get("run_name", f"Run_{run_id[:8]}") # Ambil dari params jika ada
+    mlflow.set_tag("mlflow.runName", current_run_name)
+    print(f"[DEBUG] Tag 'mlflow.runName' diatur ke: {current_run_name}")
 
-    print(f"Logging ke MLflow URI: {mlflow.get_tracking_uri()}")
 
-    # Log parameter yang dipakai untuk training
-    mlflow.log_params(params)
+    print(f"Logging ke MLflow URI: {mlflow.get_tracking_uri()} (Run ID: {run_id})")
+
+    # Log parameter yang dipakai untuk training (kecualikan run_name jika sudah jadi tag)
+    params_to_log = {k: v for k, v in params.items() if k != "run_name"}
+    mlflow.log_params(params_to_log)
     mlflow.log_param("data_file_used", data_file_path_info)
 
+    # ... (sisa fungsi train_model tetap sama dari sini) ...
     # Buat dan latih model RandomForest
-    print(f"▶ Training RandomForestClassifier dengan params: {params}")
+    print(f"▶ Training RandomForestClassifier dengan params (setelah filter run_name): {params_to_log}")
     model = RandomForestClassifier(
         random_state=42,
-        n_estimators=params.get("n_estimators", 100),
-        max_depth=params.get("max_depth", None),
-        min_samples_split=params.get("min_samples_split", 2),
-        min_samples_leaf=params.get("min_samples_leaf", 1),
-        class_weight=params.get("class_weight", None)
+        n_estimators=params_to_log.get("n_estimators", 100), # gunakan params_to_log
+        max_depth=params_to_log.get("max_depth", None),
+        min_samples_split=params_to_log.get("min_samples_split", 2),
+        min_samples_leaf=params_to_log.get("min_samples_leaf", 1),
+        class_weight=params_to_log.get("class_weight", None)
     )
     model.fit(X_train, y_train)
 
@@ -154,6 +174,7 @@ def train_model(
     print(f"▶ Accuracy (Test): {accuracy_test:.4f}, F1 Macro (Test): {f1_macro_test:.4f}")
 
     # Simpan artefak tambahan
+    os.makedirs(ARTIFACTS_TEMP_DIR, exist_ok=True) 
     cm_plot_path = plot_confusion_matrix(y_test, y_pred_test, class_labels_str, run_id, ARTIFACTS_TEMP_DIR)
     mlflow.log_artifact(cm_plot_path, artifact_path="plots")
 
@@ -163,11 +184,13 @@ def train_model(
     mlflow.log_artifact(report_json_path, artifact_path="reports")
 
     # Log model ke MLflow
+    registered_model_name = f"{current_experiment_name}-RF-CI"
+    print(f"Akan meregistrasikan model dengan nama: {registered_model_name}")
     mlflow.sklearn.log_model(
         sk_model=model,
         artifact_path="random-forest-model-ci",
         input_example=X_train.iloc[[0]],
-        registered_model_name=f"{current_experiment_name}-RF-CI"
+        registered_model_name=registered_model_name
     )
     print("✔ Model berhasil di-log ke MLflow.")
 
@@ -179,7 +202,6 @@ def train_model(
             'importance': importances
         }).sort_values(by='importance', ascending=False)
 
-        # Plot top 20 feature importances
         plt.figure(figsize=(10, max(6, min(20, len(feature_names)) // 2)))
         sns.barplot(x='importance', y='feature', data=feature_importances_df.head(20))
         plt.title(f'Top 20 Feature Importances (Run {run_id[:8]})')
@@ -190,13 +212,13 @@ def train_model(
         mlflow.log_artifact(fi_plot_path, artifact_path="plots")
         print(f"✔ Feature importances plot disimpan: {fi_plot_path}")
 
-        # Simpan CSV feature importances
         fi_csv_path = os.path.join(ARTIFACTS_TEMP_DIR, f"feature_importances_ci_run_{run_id[:8]}.csv")
         feature_importances_df.to_csv(fi_csv_path, index=False)
         mlflow.log_artifact(fi_csv_path, artifact_path="reports")
         print(f"✔ Feature importances CSV disimpan: {fi_csv_path}")
 
     print(f"\n✔ Eksperimen selesai. Run ID: {run_id}")
+    print("--- [DEBUG] Keluar dari train_model (sukses) ---")
 
 if __name__ == "__main__":
 
