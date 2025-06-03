@@ -9,4 +9,4 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 COPY MLproject .
 COPY modelling.py .
-COPY processed_shopping_trends.csv . 
+COPY processed_shopping_trends.csv .
