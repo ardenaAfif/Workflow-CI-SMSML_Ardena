@@ -13,7 +13,7 @@ import os
 import json
 import argparse
 
-DEFAULT_MLFLOW_EXPERIMENT_NAME = "Shopping_Trends_CI_Retraining"
+DEFAULT_MLFLOW_EXPERIMENT_NAME = "Shopping_Trends_CI"
 DEFAULT_PROCESSED_DATA_PATH = "processed_shopping_trends.csv"
 
 # Folder untuk menyimpan plot/JSON sementara sebelum di-log sebagai artifact
@@ -31,20 +31,19 @@ def init_mlflow_local(experiment_name: str):
     mlflow.set_tracking_uri(None)
 
     # 2) Set experiment (jika tidak ada, MLflow otomatis buat)
-    final_experiment_name = experiment_name
-    mlflow.set_experiment(final_experiment_name)
+    mlflow.set_experiment(experiment_name)
 
     try:
-        curr_exp = mlflow.get_experiment_by_name(final_experiment_name)
+        curr_exp = mlflow.get_experiment_by_name(experiment_name)
         if curr_exp:
             print(f"✔ Eksperimen MLflow diatur ke: {curr_exp.name} (ID: {curr_exp.experiment_id})")
         else:
             # Kalau belum ter-query, biasanya MLflow baru membuat saat set_experiment
-            print(f"ℹ Eksperimen seharusnya diatur ke: {final_experiment_name} (akan dibuat otomatis)")
+            print(f"ℹ Eksperimen seharusnya diatur ke: {experiment_name} (akan dibuat otomatis)")
     except Exception as e:
-        print(f"[WARNING] Tidak dapat mengambil detail eksperimen '{final_experiment_name}': {e}")
+        print(f"[WARNING] Tidak dapat mengambil detail eksperimen '{experiment_name}': {e}")
 
-    return True, final_experiment_name
+    return True, experiment_name
 
 
 def load_and_split_data(data_path: str):
