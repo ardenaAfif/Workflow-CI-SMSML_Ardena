@@ -1,1 +1,1 @@
-https://hub.docker.com/repository/docker/aafifpratama/shopping-trends-ci/general
+https://hub.docker.com/r/aafifpratama/shopping-trends-ci
